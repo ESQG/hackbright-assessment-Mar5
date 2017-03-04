@@ -25,18 +25,40 @@ Performance of Different Data Structures
     Fill in the runtimes for the following actions for the table below:
 
         Data Structure               Index   Search  Add-R   Add-L   Pop-L   Pop-R
-        Python List (Array)           O(1)    O(n)    O(1)             
-        Linked List                      
-        Doubly-Linked List                       
-        Queue (as Array)                X       X               X               X
-        Queue (as LL or DLL)            X       X               X               X
-        Stack (as Array, LL, or DLL)    X       X               X       X    
-        Deque (as DLL)                  X       X                
+        Python List (Array)           O(1)    O(n)    O(1)    O(n)    O(n)    O(1)
+        Linked List                   O(n)    O(n)    O(1)    O(1)    O(1)    O(n)
+        Doubly-Linked List            O(n)    O(n)    O(1)    O(1)    O(1)    O(1) 
+        Queue (as Array)                X       X     O(1)      X     O(n)     X
+        Queue (as LL or DLL)            X       X     O(1)      X     O(1)     X
+        Stack (as Array, LL, or DLL)    X       X     O(1)      X       X     O(1)
+        Deque (as DLL)                  X       X     O(1)    O(1)    O(1)    O(1)
 
             Index: Find an item in the structure when you know its position
             Search: Find an item in the structure when you know its data
             Add(R/L): Set a key in set/dictionary or add node to tree
             Pop(R/L): Remove a key or node
+
+        Python list: To maintain the array of pointers in order, when adding an element on the left, meaning at index 0, all other pointers must be rebound to point to a new element (0 points to the new element, 1 points to what 0 used to point to, and so on).  That makes the process O(n), and similarly popping left is O(n).  Pop-R, however, requires only unbinding of the last pointer in the array, and decrementing the stored length of the list.  The number of operations is independent of the size of the list, hence O(1).
+
+        Linked List, Doubly Linked List: 
+        As no index is maintained, to find an element requires traversal, an average of n/2 operations (worse case n), making it O(n).  This is true whether the list is singly or doubly linked. Search is O(n) on both types for the same reason: each node must be traversed and its data checked before returning success or failure.
+
+        For a singly or doubly linked list with a head and a tail (as is standard), Add-R and Add-L are nearly the same operation, and can be done by altering pointers only involving the new node and the old head or tail, without traversing the list.  This makes them O(n).
+
+        One disadvantage of singly linked lists shows up when removing nodes.  To remove from the head on either type, the operations involve the old head and its next node, without affecting the rest of the list, making them O(1).  But to remove the tail requires finding the penultimate element of the linked list, to set it as the new tail and to remove its pointer to the old tail.  For a doubly linked list, one need only jump to tail.prev, making the process O(1); but for a singly linked list, one must traverse the list to find the new tail, making it O(n).
+
+        Queue (as Array):
+        Being implemented as an array, this has the same runtimes as the equivalent opreations for Python lists.  Technically an array in C, implemented with contiguous memory slots, might plausibly have different runtimes than a Python list; but in practice the number of pointer-rebindings in a list is the same as the number of memory-reallocations in an array, so the runtimes are equivalent.
+
+        Queue (as LL or DLL):
+        Again, the runtimes are equivalent to those in a linked list or doubly linked list as explained above.  Since Pop-R is the operation where the two differ, and queues do not allow that operation, the runtimes may be treated as equivalent.
+
+        Stack (as Array, LL, or DLL):
+        The runtimes for the operations specified above are O(1) on all data types, except for Pop-R for a linked list.  This is because when implementing a stack as a linked list, the "right" end of a stack is implemented as the head of the linked list instead of the tail: so when using a linked list, Add-R for a stack really means Add-L for the underlying linked list; and when one item is popped off, the "next" item according to the linked list, is now at the top (or "right") of the stack.
+
+        Deque (as DLL):
+        Since a deque is a doubly linked list that does not allow traversal, it stands to reason that the allowed operations are O(1), and that those same operations are O(1) for a doubly linked list.
+
 
     Fill in Runtime and Memory:
 
@@ -44,15 +66,28 @@ Performance of Different Data Structures
 
             Data Structure      Get     Add     Delete  Iterate Memory
         Dictionary (Hash Map)   O(1)    O(1)    O(1)    O(n)    medium
-        Set (Hash Map)                   
-        Binary Search Tree                   
-        Tree
+        Set (Hash Map)          O(1)    O(1)    O(1)    O(n)    medium
+        Binary Search Tree   O(log n) O(log n) O(log n) O(n)    small     
+        Tree                   O(n)    O(1)     O(1)    O(n)    small
 
             Get: Find an item in the structure
             Add: Set a key in set/dictionary or add node to tree
             Delete: Remove a key or node
             Iterate: Find next item in data structure
             Memory: Relative to data, how much memory is used? (Choices: a little, medium, or a lot)
+
+        Set:  A set is a dictionary where the only data is a key, rather than having a value in addition.  Thus, all of the runtimes and the runspace are similar.  Although large values in a dictionary might make it take up more space in practice, this consideration is independent of the number of items in the dictionary, so does not contribute to a runspace scaling calculation.
+
+        Binary Search Tree:
+        To get an element from the tree requires binary search, which is O(log n) assuming the tree is balanced.
+        When removing a node, it may be necessary to substantially rearrange the tree.  For example, when removing the root, it must be replaced with either the right-most leaf of the left subtree, or the left-most leaf of the right subtree, to ensure that the new root is greater than all elements of the left subtree and less than all elements of the right subtree.  However, the search for that node requires descending at worst the number of levels in the tree, which is log n.  Thus, given a node, we may need log n operations to rearrange the tree correctly.
+        When adding a new node, one must search for where it should go; this is log n, and to insert it then requires not many operations.  If we wish to make sure the tree is balanced, we should always add it at the lowest possible level.
+
+        As for the memory storage, a BST is efficient as the only locations maintained in memory are those belonging to the nodes themselves, with one pointer to the root and other pointers from nodes to their children. A tree is memory-efficient for the same reasons as the BST.
+ 
+        For the purpose of iteration, a BST should be treated as a general tree, and to iterate in sorted order, one uses a depth-first search that visits left children first.  As with searching, one adds each node's children to a stack of nodes to iterate over, making the runtime O(n).
+
+        To add a node to a general tree, one may do so anywhere: so given a location, adding the node is O(1).  For deleting a node, one must find the node's parent; with a reference to parent, the operation would be O(1), but in general, one maintains no such reference and must search for the parent.  This makes the deletion runtime have a lower bound of the search runtime, which in turn works by iterating over the whole tree, so is O(n).
 
 
 Sorting
