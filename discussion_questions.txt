@@ -38,6 +38,16 @@ Performance of Different Data Structures
             Add(R/L): Set a key in set/dictionary or add node to tree
             Pop(R/L): Remove a key or node
 
+        Short explanations
+
+        Python list: When adding or removing an element on the left, the array of pointers must be shifted to re-index all existing items on the list, so this operation is linear.  Such re-indexing is not necessary on the right, for adding or removing, so these are constant time operations.
+
+        Linked list, doubly linked list: To add to the head or tail of either, or to remove from the head, requires only operations involving the current head or tail and the new node.  For a doubly linked list removal from the tail is equivalent to removal from the head.  All of these operations are therefore O(1).  A singly linked list requires traversal to find the penultimate element, so removal is O(n).
+
+        Stacks and Queues: As these types do not allow traversal, properly implemented, their allowed operations should be O(1).  This is true for LL or DLL implementations of both, where the "right" in the stack is placed at the "head" (usually considered the left) of a linked list.  However, an array cannot optimally implement a queue because one end necessarily costs O(n) for addition or removal of nodes, in order to maintain indexing.
+
+        Longer explanations
+
         Python list: To maintain the array of pointers in order, when adding an element on the left, meaning at index 0, all other pointers must be rebound to point to a new element (0 points to the new element, 1 points to what 0 used to point to, and so on).  That makes the process O(n), and similarly popping left is O(n).  Pop-R, however, requires only unbinding of the last pointer in the array, and decrementing the stored length of the list.  The number of operations is independent of the size of the list, hence O(1).
 
         Linked List, Doubly Linked List: 
@@ -76,16 +86,25 @@ Performance of Different Data Structures
             Iterate: Find next item in data structure
             Memory: Relative to data, how much memory is used? (Choices: a little, medium, or a lot)
 
-        Set:  A set is a dictionary where the only data is a key, rather than having a value in addition.  Thus, all of the runtimes and the runspace are similar.  Although large values in a dictionary might make it take up more space in practice, this consideration is independent of the number of items in the dictionary, so does not contribute to a runspace scaling calculation.
+
+        Set: 
+
+        A set is effectively the keys of a dictionary, so the runtimes match those of a dictionary.  The hash addresses provide direct pointers for lookup, making it O(1) so long as the hash function and size of the table ensure that collisions are infrequent.  Places do not change, or only a the elements with colliding hashes may change upon deletion or addition, making these operations O(1) as well.  Iteration is O(n) provided that the size of the hash table scales linearly with n (as proper implementations do).
 
         Binary Search Tree:
+
         To get an element from the tree requires binary search, which is O(log n) assuming the tree is balanced.
+
         When removing a node, it may be necessary to substantially rearrange the tree.  For example, when removing the root, it must be replaced with either the right-most leaf of the left subtree, or the left-most leaf of the right subtree, to ensure that the new root is greater than all elements of the left subtree and less than all elements of the right subtree.  However, the search for that node requires descending at worst the number of levels in the tree, which is log n.  Thus, given a node, we may need log n operations to rearrange the tree correctly.
         When adding a new node, one must search for where it should go; this is log n, and to insert it then requires not many operations.  If we wish to make sure the tree is balanced, we should always add it at the lowest possible level.
 
+        BST & general trees (memory, iteration):
+
         As for the memory storage, a BST is efficient as the only locations maintained in memory are those belonging to the nodes themselves, with one pointer to the root and other pointers from nodes to their children. A tree is memory-efficient for the same reasons as the BST.
- 
+
         For the purpose of iteration, a BST should be treated as a general tree, and to iterate in sorted order, one uses a depth-first search that visits left children first.  As with searching, one adds each node's children to a stack of nodes to iterate over, making the runtime O(n).
+
+        Trees:
 
         To add a node to a general tree, one may do so anywhere: so given a location, adding the node is O(1).  For deleting a node, one must find the node's parent; with a reference to parent, the operation would be O(1), but in general, one maintains no such reference and must search for the parent.  This makes the deletion runtime have a lower bound of the search runtime, which in turn works by iterating over the whole tree, so is O(n).
 
@@ -94,8 +113,14 @@ Sorting
 
     1. Describe in words how the Bubble Sort algorithm works.
 
+        The bubble sort involves comparisons and swaps of each adjacent pairs on the list in order.  For each iteration, therefore, an element may move left by at most one place, but may move right arbitrarily many places: it does so until it encounters a bigger element (or equal, to ensure a stable sort).  Because the least element could be at the end of the list, even a fully optimized bubble sort would require n iterations, each one shorter than the last, to move that element to the beginning; thus, runtime is quadratic.
 
     2. Describe in words how the Merge Sort algorithm works.
 
+        The merge sort works by dividing the list in half and sorting each half recursively, then merging the two sorted halves into a sorted whole.  At the base level, a list of one element or no elements is considered sorted and need not be split; a list of two elements is split into its two pieces, which are then compared, and merged into a sorted list of two elements.  Each element of the list participates in about log n merge operations (which are linear in the size of the merged piece), so the total runtime is n log n.
 
     3. Describe in words how the Quick Sort algorithm works.
+
+        The Quick Sort algorithm works by choosing an element at random on the list, called a pivot, and then comparing each element of the rest of the list to the pivot.  The elements less than it are placed to the left of the pivot, the larger elements to its right, and any equal elements are placed adjacent to the pivot.  (To ensure a stable sort, this should be done in an order-preserving manner, including placing any equal elements of lower index than that of the pivot, immediately to its left, or higher index to its right.)  Then, the left-hand list and right-hand list (not including the pivot) is sorted recursively by the same method.  As with the merge sort, an empty list and a list of length one are considered sorted.
+
+        For generic input and random choices, this algorithm is n log n runtime because the list is divided in half each time, and the runtime is often faster than merge sort.  However, merge sort is reliably n log n regardless of input, whereas a spectacularly unlucky quicksort, or one run on a sorted list that always chooses a pivot at one end instead of at a random index, could have quadratic runtime.
